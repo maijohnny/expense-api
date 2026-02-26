@@ -4,10 +4,13 @@ import cors from "cors";
 import { ErrorMiddleware } from "./middlewares/error";
 import connectDB from "./config/db";
 import rateLimit from "express-rate-limit";
+import http from "http";
 
 import userRouter from "./routes/user.route";
 import categoryRouter from "./routes/category.route";
 import expenseRouter from "./routes/expense.route";
+import messageRouter from "./routes/message.route";
+import { initializeSocket } from "./socket/socket";
 
 const limiter = rateLimit({
     windowMs: 10 * 60 * 1000,
@@ -17,6 +20,9 @@ const limiter = rateLimit({
 });
 
 const app = express();
+const server = http.createServer(app);
+const io = initializeSocket(server);
+app.set("socketio", io);
 
 app.use(express.json({ limit: "50mb" }));
 app.use(cors({ origin: "*" }));
@@ -32,6 +38,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use('/users', userRouter);
 app.use('/categories', categoryRouter);
 app.use('/expenses', expenseRouter);
+app.use('/messages', messageRouter);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
     res.status(404).json({
@@ -40,7 +47,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     })
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
     connectDB(dbUrl);
 });
