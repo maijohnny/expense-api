@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:3000
+@token = 
+
+//Main
+GET {{baseUrl}}
+
+###
+
+//Register
+POST {{baseUrl}}/users/register
+Content-Type: application/json
